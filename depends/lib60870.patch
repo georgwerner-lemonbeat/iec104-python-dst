@@ -1,0 +1,41 @@
+diff --git a/.gitignore b/.gitignore
+index e69de29..fdf344e 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -0,0 +1 @@
++lib60870-C/dependencies/mbedtls-2.28/
+\ No newline at end of file
+diff --git a/lib60870-C/CMakeLists.txt b/lib60870-C/CMakeLists.txt
+index 34d8947..453ab2e 100644
+--- a/lib60870-C/CMakeLists.txt
++++ b/lib60870-C/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-cmake_minimum_required(VERSION 3.0)
++cmake_minimum_required(VERSION 3.5)
+
+ # automagically detect if we should cross-compile
+ if(DEFINED ENV{TOOLCHAIN})
+diff --git a/lib60870-C/config/lib60870_config.h b/lib60870-C/config/lib60870_config.h
+index bbe021a..ad78da7 100644
+--- a/lib60870-C/config/lib60870_config.h
++++ b/lib60870-C/config/lib60870_config.h
+@@ -78,6 +78,6 @@
+ #define CONFIG_TCP_KEEPALIVE_CNT 2
+
+ /* test command without timestamp is not allowed for CS104. Set to 1 to enable it anyway. */
+-#define CONFIG_ALLOW_C_TS_NA_1_FOR_CS104 0
++#define CONFIG_ALLOW_C_TS_NA_1_FOR_CS104 1
+
+ #endif /* CONFIG_LIB60870_CONFIG_H_ */
+diff --git a/lib60870-C/src/hal/tls/mbedtls/mbedtls_config.h b/lib60870-C/src/hal/tls/mbedtls/mbedtls_config.h
+index 4cb7722..e211d58 100644
+--- a/lib60870-C/src/hal/tls/mbedtls/mbedtls_config.h
++++ b/lib60870-C/src/hal/tls/mbedtls/mbedtls_config.h
+@@ -7,7 +7,6 @@
+ #define MBEDTLS_HAVE_TIME_DATE
+ #define MBEDTLS_NO_UDBL_DIVISION
+ #define MBEDTLS_PLATFORM_C
+-#define MBEDTLS_DEBUG_C
+
+ /* mbed TLS feature support */
+ #define MBEDTLS_CIPHER_MODE_CBC
