@@ -37,8 +37,16 @@ using namespace Remote;
 void TransportSecurity::eventHandler(void *parameter, TLSEventLevel eventLevel,
                                      int eventCode, const char *msg,
                                      TLSConnection con) {
-  std::shared_ptr<TransportSecurity> instance =
-      static_cast<TransportSecurity *>(parameter)->shared_from_this();
+
+  // std::shared_ptr<TransportSecurity> instance{};
+  //
+  // try {
+  //   instance = static_cast<TransportSecurity
+  //   *>(parameter)->shared_from_this();
+  // } catch (const std::bad_weak_ptr &e) {
+  //   DEBUG_PRINT(Debug::Server||Debug::Client, "Ignore tls event in
+  //   shutdown"); return;
+  // }
 
   char peerAddrBuf[60];
   char *peerAddr = nullptr;

@@ -807,7 +807,15 @@ void Connection::rawMessageHandler(void *parameter, uint_fast8_t *msg,
     begin = std::chrono::steady_clock::now();
   }
 
-  auto instance = (static_cast<Connection *>(parameter)->shared_from_this());
+  std::shared_ptr<Connection> instance{};
+
+  try {
+    instance = static_cast<Connection *>(parameter)->shared_from_this();
+  } catch (const std::bad_weak_ptr &e) {
+    DEBUG_PRINT(Debug::Connection, "Ignore raw message in shutdown");
+    return;
+  }
+
   if (sent) {
     instance->onSendRaw(msg, msgSize);
   } else {
@@ -833,7 +841,16 @@ void Connection::connectionHandler(void *parameter, CS104_Connection connection,
     begin = std::chrono::steady_clock::now();
   }
 
-  auto instance = (static_cast<Connection *>(parameter)->shared_from_this());
+  std::shared_ptr<Connection> instance{};
+
+  try {
+    instance = static_cast<Connection *>(parameter)->shared_from_this();
+  } catch (const std::bad_weak_ptr &e) {
+    DEBUG_PRINT(Debug::Connection, "Ignore connection event " +
+                                       ConnectionEvent_toString(event) +
+                                       " in shutdown");
+    return;
+  }
 
   switch (event) {
   case CS104_CONNECTION_FAILED: {
