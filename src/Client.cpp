@@ -85,9 +85,7 @@ void Client::start() {
 void Client::stop() {
   Module::ScopedGilRelease const scoped("Client.stop");
 
-  // stop all connections
-  disconnectAll();
-
+  // stop active connection management first
   bool expected = true;
   if (!enabled.compare_exchange_strong(expected, false)) {
     DEBUG_PRINT(Debug::Client, "stop] Already stopped");
@@ -103,6 +101,9 @@ void Client::stop() {
     delete runThread;
     runThread = nullptr;
   }
+
+  // stop all connections
+  disconnectAll();
 
   DEBUG_PRINT(Debug::Client, "stop] Stopped");
 }
