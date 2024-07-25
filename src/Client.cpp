@@ -323,13 +323,11 @@ void Client::thread_run() {
 
     runThread_wait.wait_until(lock, desiredEnd);
     if (debug) {
-      auto diff = std::chrono::duration_cast<std::chrono::microseconds>(
-                      std::chrono::system_clock::now() - desiredEnd)
-                      .count();
+      auto diff = DIFFNOW_MS(desiredEnd);
       if (diff > 5000) {
         DEBUG_PRINT_CONDITION(true, Debug::Client,
                               "thread_run] Cannot keep up the tick rate: " +
-                                  std::to_string(diff) + u8" \xb5s");
+                                  std::to_string(diff) + MICRO_SEC_STR);
       }
     }
   }

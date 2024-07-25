@@ -367,13 +367,8 @@ bool Connection::awaitCommandSuccess(const std::string &cmdId) {
     }
 
     // print
-    DEBUG_PRINT(Debug::Connection,
-                "await_command_success] Stats " + cmdId + " | TOTAL " +
-                    std::to_string(
-                        std::chrono::duration_cast<std::chrono::microseconds>(
-                            end - std::chrono::system_clock::now())
-                            .count()) +
-                    u8" \xb5s");
+    DEBUG_PRINT(Debug::Connection, "await_command_success] Stats " + cmdId +
+                                       " | TOTAL " + TICTOCNOW(end));
   }
 
   map_lock.unlock();
@@ -821,14 +816,9 @@ void Connection::rawMessageHandler(void *parameter, uint_fast8_t *msg,
 
   if (debug) {
     end = std::chrono::steady_clock::now();
-    DEBUG_PRINT_CONDITION(
-        true, Debug::Connection,
-        "raw_message_handler] Stats | TOTAL " +
-            std::to_string(
-                std::chrono::duration_cast<std::chrono::microseconds>(end -
-                                                                      begin)
-                    .count()) +
-            u8" \xb5s");
+    DEBUG_PRINT_CONDITION(true, Debug::Connection,
+                          "raw_message_handler] Stats | TOTAL " +
+                              TICTOC(begin, end));
   }
 }
 
@@ -870,15 +860,11 @@ void Connection::connectionHandler(void *parameter, CS104_Connection connection,
 
   if (debug) {
     end = std::chrono::steady_clock::now();
-    DEBUG_PRINT_CONDITION(
-        true, Debug::Connection,
-        "connection_handler] Connection " + ConnectionEvent_toString(event) +
-            " to " + instance->getConnectionString() + " | TOTAL " +
-            std::to_string(
-                std::chrono::duration_cast<std::chrono::microseconds>(end -
-                                                                      begin)
-                    .count()) +
-            u8" \xb5s");
+    DEBUG_PRINT_CONDITION(true, Debug::Connection,
+                          "connection_handler] Connection " +
+                              ConnectionEvent_toString(event) + " to " +
+                              instance->getConnectionString() + " | TOTAL " +
+                              TICTOC(begin, end));
   }
 }
 
@@ -960,14 +946,11 @@ bool Connection::asduHandler(void *parameter, int address, CS101_ASDU asdu) {
             true, Debug::Connection,
             "asdu_handler] " +
                 std::string(TypeID_toString(message->getType())) +
-                " Report Stats | CA " +
+                " Report Stats"
+                " | CA " +
                 std::to_string(message->getCommonAddress()) + " | IOA " +
                 std::to_string(message->getIOA()) + " | TOTAL " +
-                std::to_string(
-                    std::chrono::duration_cast<std::chrono::microseconds>(end -
-                                                                          begin)
-                        .count()) +
-                u8" \xb5s");
+                TICTOC(begin, end));
       }
       return true;
     }
@@ -986,14 +969,10 @@ bool Connection::asduHandler(void *parameter, int address, CS101_ASDU asdu) {
             true, Debug::Connection,
             "asdu_handler] " +
                 std::string(TypeID_toString(message->getType())) +
-                " Response Stats | CA " +
+                " Response Stats" + " | CA " +
                 std::to_string(message->getCommonAddress()) + " | IOA " +
                 std::to_string(message->getIOA()) + " | TOTAL " +
-                std::to_string(
-                    std::chrono::duration_cast<std::chrono::microseconds>(end -
-                                                                          begin)
-                        .count()) +
-                u8" \xb5s");
+                TICTOC(begin, end));
       }
       return true;
     }
@@ -1004,14 +983,10 @@ bool Connection::asduHandler(void *parameter, int address, CS101_ASDU asdu) {
       DEBUG_PRINT_CONDITION(
           true, Debug::Connection,
           "asduHandler] Unhandled " +
-              std::string(TypeID_toString(message->getType())) +
-              " Stats | CA " + std::to_string(message->getCommonAddress()) +
+              std::string(TypeID_toString(message->getType())) + " Stats" +
+              " | CA " + std::to_string(message->getCommonAddress()) +
               " | IOA " + std::to_string(message->getIOA()) + " | TOTAL " +
-              std::to_string(
-                  std::chrono::duration_cast<std::chrono::microseconds>(end -
-                                                                        begin)
-                      .count()) +
-              u8" \xb5s");
+              TICTOC(begin, end));
     }
 
   } catch (const std::exception &e) {

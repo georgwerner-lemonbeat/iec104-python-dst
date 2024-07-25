@@ -168,13 +168,11 @@ void Server::thread_run() {
     runThread_wait.wait_until(lock, desiredEnd);
 
     if (debug) {
-      auto diff = std::chrono::duration_cast<std::chrono::microseconds>(
-                      std::chrono::system_clock::now() - desiredEnd)
-                      .count();
+      auto diff = DIFFNOW_MS(desiredEnd);
       if (diff > 5000) {
         DEBUG_PRINT_CONDITION(true, Debug::Server,
                               "thread_run] Cannot keep up the tick rate: " +
-                                  std::to_string(diff) + u8" \xb5s");
+                                  std::to_string(diff) + MICRO_SEC_STR);
       } /* else {
            DEBUG_PRINT_CONDITION(true, Debug::Server, "Server.thread_run] Tick |
        CON " + std::to_string(activeConnections));
@@ -409,7 +407,14 @@ void Server::setOnConnectCallback(py::object &callable) {
 }
 
 bool Server::connectionRequestHandler(void *parameter, const char *ipAddress) {
-  auto instance = static_cast<Server *>(parameter)->shared_from_this();
+  std::shared_ptr<Server> instance{};
+
+  try {
+    instance = static_cast<Server *>(parameter)->shared_from_this();
+  } catch (const std::bad_weak_ptr &e) {
+    DEBUG_PRINT(Debug::Server, "Reject connection request in shutdown");
+    return false;
+  }
 
   if (instance->py_onConnect.is_set()) {
     DEBUG_PRINT(Debug::Server, "CALLBACK on_connect");
@@ -438,7 +443,16 @@ void Server::connectionEventHandler(void *parameter,
     begin = std::chrono::steady_clock::now();
   }
 
-  auto instance = static_cast<Server *>(parameter)->shared_from_this();
+  std::shared_ptr<Server> instance{};
+
+  try {
+    instance = static_cast<Server *>(parameter)->shared_from_this();
+  } catch (const std::bad_weak_ptr &e) {
+    DEBUG_PRINT(Debug::Server, "Ignore connection event " +
+                                   PeerConnectionEvent_toString(event) +
+                                   " in shutdown");
+    return;
+  }
 
   char ipAddrStr[60];
   IMasterConnection_getPeerAddress(connection, ipAddrStr, 60);
@@ -494,16 +508,11 @@ void Server::connectionEventHandler(void *parameter,
 
   if (debug) {
     end = std::chrono::steady_clock::now();
-    DEBUG_PRINT_CONDITION(
-        true, Debug::Server,
-        "connection_event_handler] Connection " +
-            PeerConnectionEvent_toString(event) + " by " +
-            std::string(ipAddrStr) + " | TOTAL " +
-            std::to_string(
-                std::chrono::duration_cast<std::chrono::microseconds>(end -
-                                                                      begin)
-                    .count()) +
-            u8" \xb5s");
+    DEBUG_PRINT_CONDITION(true, Debug::Server,
+                          "connection_event_handler] Connection " +
+                              PeerConnectionEvent_toString(event) + " by " +
+                              std::string(ipAddrStr) + " | TOTAL " +
+                              TICTOC(begin, end));
   }
 }
 
@@ -568,18 +577,13 @@ bool Server::send(std::shared_ptr<Remote::Message::OutgoingMessage> message,
 
   if (debug) {
     end = std::chrono::steady_clock::now();
-    DEBUG_PRINT_CONDITION(
-        true, Debug::Server,
-        "send] Send " + std::string(TypeID_toString(message->getType())) +
-            " | COT: " +
-            CS101_CauseOfTransmission_toString(
-                message->getCauseOfTransmission()) +
-            " | TOTAL " +
-            std::to_string(
-                std::chrono::duration_cast<std::chrono::microseconds>(end -
-                                                                      begin)
-                    .count()) +
-            u8" \xb5s");
+    DEBUG_PRINT_CONDITION(true, Debug::Server,
+                          "send] Send " +
+                              std::string(TypeID_toString(message->getType())) +
+                              " | COT: " +
+                              CS101_CauseOfTransmission_toString(
+                                  message->getCauseOfTransmission()) +
+                              " | TOTAL " + TICTOC(begin, end));
   }
 
   return true;
@@ -778,24 +782,14 @@ void Server::sendInterrogationResponse(const CS101_CauseOfTransmission cot,
     if (CS101_COT_PERIODIC == cot) {
       if (!empty) {
 
-        DEBUG_PRINT_CONDITION(
-            true, Debug::Server,
-            "send_interrogation_response] Periodic | TOTAL " +
-                std::to_string(
-                    std::chrono::duration_cast<std::chrono::microseconds>(end -
-                                                                          begin)
-                        .count()) +
-                u8" \xb5s");
+        DEBUG_PRINT_CONDITION(true, Debug::Server,
+                              "send_interrogation_response] Periodic | TOTAL " +
+                                  TICTOC(begin, end));
       }
     } else {
-      DEBUG_PRINT_CONDITION(
-          true, Debug::Server,
-          "send_interrogation_response] Request | TOTAL " +
-              std::to_string(
-                  std::chrono::duration_cast<std::chrono::microseconds>(end -
-                                                                        begin)
-                      .count()) +
-              u8" \xb5s");
+      DEBUG_PRINT_CONDITION(true, Debug::Server,
+                            "send_interrogation_response] Request | TOTAL " +
+                                TICTOC(begin, end));
     }
   }
 }
@@ -907,9 +901,7 @@ message.second->getInformationObject());
         end = std::chrono::steady_clock::now();
         if (!empty) {
             DEBUG_PRINT_CONDITION(true, Debug::Server, "Server.sendPeriodic]
-TOTAL " +
-std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(end -
-begin).count()) + u8" \xb5s");
+TOTAL " + TICTOC(begin, end));
         }
     }
 }*/
@@ -967,7 +959,15 @@ void Server::rawMessageHandler(void *parameter, IMasterConnection connection,
     begin = std::chrono::steady_clock::now();
   }
 
-  auto instance = static_cast<Server *>(parameter)->shared_from_this();
+  std::shared_ptr<Server> instance{};
+
+  try {
+    instance = static_cast<Server *>(parameter)->shared_from_this();
+  } catch (const std::bad_weak_ptr &e) {
+    DEBUG_PRINT(Debug::Server, "Ignore raw message in shutdown");
+    return;
+  }
+
   if (sent) {
     instance->onSendRaw(msg, msgSize);
   } else {
@@ -976,14 +976,8 @@ void Server::rawMessageHandler(void *parameter, IMasterConnection connection,
 
   if (debug) {
     end = std::chrono::steady_clock::now();
-    DEBUG_PRINT_CONDITION(
-        true, Debug::Server,
-        "raw_message_handler] TOTAL " +
-            std::to_string(
-                std::chrono::duration_cast<std::chrono::microseconds>(end -
-                                                                      begin)
-                    .count()) +
-            u8" \xb5s");
+    DEBUG_PRINT_CONDITION(true, Debug::Server,
+                          "raw_message_handler] TOTAL " + TICTOC(begin, end));
   }
 }
 
@@ -995,7 +989,14 @@ CS101_ASDU asdu, CP56Time2a newtime) { bool debug = DEBUG_TEST(Debug::Server);
         begin = std::chrono::steady_clock::now();
     }
 
-    auto instance = static_cast<Server *>(parameter)->shared_from_this();
+    std::shared_ptr<Server> instance{};
+
+    try {
+        instance = static_cast<Server *>(parameter)->shared_from_this();
+    } catch (const std::bad_weak_ptr &e) {
+        DEBUG_PRINT(Debug::Server, "Reject clock sync command in shutdown");
+        return false;
+    }
 
     char ipAddrStr[60];
     IMasterConnection_getPeerAddress(connection, ipAddrStr, 60);
@@ -1012,9 +1013,7 @@ CS101_ASDU asdu, CP56Time2a newtime) { bool debug = DEBUG_TEST(Debug::Server);
                               "Server.clockSyncHandler] TIME " +
 CP56Time2a_toString(newtime) + " | IP " + std::string(ipAddrStr) + " | OA " +
 std::to_string(CS101_ASDU_getOA(asdu)) + " | CA " +
-std::to_string(CS101_ASDU_getCA(asdu)) + " | TOTAL " +
-std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(end -
-begin).count()) + u8" \xb5s");
+std::to_string(CS101_ASDU_getCA(asdu)) + " | TOTAL " + TICTOC(begin, end));
     }
     return true;
 }*/
@@ -1028,7 +1027,14 @@ bool Server::interrogationHandler(void *parameter, IMasterConnection connection,
     begin = std::chrono::steady_clock::now();
   }
 
-  auto instance = static_cast<Server *>(parameter)->shared_from_this();
+  std::shared_ptr<Server> instance{};
+
+  try {
+    instance = static_cast<Server *>(parameter)->shared_from_this();
+  } catch (const std::bad_weak_ptr &e) {
+    DEBUG_PRINT(Debug::Server, "Reject interrogation command in shutdown");
+    return false;
+  }
 
   if (auto message = instance->getValidMessage(connection, asdu)) {
 
@@ -1058,18 +1064,14 @@ bool Server::interrogationHandler(void *parameter, IMasterConnection connection,
     char ipAddrStr[60];
     IMasterConnection_getPeerAddress(connection, ipAddrStr, 60);
 
-    DEBUG_PRINT_CONDITION(
-        true, Debug::Server,
-        "interrogation_handler]"
-        " | IP " +
-            std::string(ipAddrStr) + " | OA " +
-            std::to_string(CS101_ASDU_getOA(asdu)) + " | CA " +
-            std::to_string(CS101_ASDU_getCA(asdu)) + " | TOTAL " +
-            std::to_string(
-                std::chrono::duration_cast<std::chrono::microseconds>(end -
-                                                                      begin)
-                    .count()) +
-            u8" \xb5s");
+    DEBUG_PRINT_CONDITION(true, Debug::Server,
+                          "interrogation_handler]"
+                          " | IP " +
+                              std::string(ipAddrStr) + " | OA " +
+                              std::to_string(CS101_ASDU_getOA(asdu)) +
+                              " | CA " +
+                              std::to_string(CS101_ASDU_getCA(asdu)) +
+                              " | TOTAL " + TICTOC(begin, end));
   }
   return true;
 }
@@ -1083,7 +1085,15 @@ bool Server::counterInterrogationHandler(void *parameter,
     begin = std::chrono::steady_clock::now();
   }
 
-  auto instance = static_cast<Server *>(parameter)->shared_from_this();
+  std::shared_ptr<Server> instance{};
+
+  try {
+    instance = static_cast<Server *>(parameter)->shared_from_this();
+  } catch (const std::bad_weak_ptr &e) {
+    DEBUG_PRINT(Debug::Server,
+                "Reject counter interrogation command in shutdown");
+    return false;
+  }
 
   if (auto message = instance->getValidMessage(connection, asdu)) {
 
@@ -1112,18 +1122,14 @@ bool Server::counterInterrogationHandler(void *parameter,
     char ipAddrStr[60];
     IMasterConnection_getPeerAddress(connection, ipAddrStr, 60);
 
-    DEBUG_PRINT_CONDITION(
-        true, Debug::Server,
-        "counter_interrogation_handler]"
-        " | IP " +
-            std::string(ipAddrStr) + " | OA " +
-            std::to_string(CS101_ASDU_getOA(asdu)) + " | CA " +
-            std::to_string(CS101_ASDU_getCA(asdu)) + " | TOTAL " +
-            std::to_string(
-                std::chrono::duration_cast<std::chrono::microseconds>(end -
-                                                                      begin)
-                    .count()) +
-            u8" \xb5s");
+    DEBUG_PRINT_CONDITION(true, Debug::Server,
+                          "counter_interrogation_handler]"
+                          " | IP " +
+                              std::string(ipAddrStr) + " | OA " +
+                              std::to_string(CS101_ASDU_getOA(asdu)) +
+                              " | CA " +
+                              std::to_string(CS101_ASDU_getCA(asdu)) +
+                              " | TOTAL " + TICTOC(begin, end));
   }
   return true;
 }
@@ -1136,7 +1142,14 @@ bool Server::readHandler(void *parameter, IMasterConnection connection,
     begin = std::chrono::steady_clock::now();
   }
 
-  auto instance = static_cast<Server *>(parameter)->shared_from_this();
+  std::shared_ptr<Server> instance{};
+
+  try {
+    instance = static_cast<Server *>(parameter)->shared_from_this();
+  } catch (const std::bad_weak_ptr &e) {
+    DEBUG_PRINT(Debug::Server, "Reject read command in shutdown");
+    return false;
+  }
 
   if (auto message = instance->getValidMessage(connection, asdu)) {
 
@@ -1186,17 +1199,13 @@ bool Server::readHandler(void *parameter, IMasterConnection connection,
     char ipAddrStr[60];
     IMasterConnection_getPeerAddress(connection, ipAddrStr, 60);
 
-    DEBUG_PRINT_CONDITION(
-        true, Debug::Server,
-        "read_handler] IOA " + std::to_string(ioAddress) + " | IP " +
-            std::string(ipAddrStr) + " | OA " +
-            std::to_string(CS101_ASDU_getOA(asdu)) + " | CA " +
-            std::to_string(CS101_ASDU_getCA(asdu)) + " | TOTAL " +
-            std::to_string(
-                std::chrono::duration_cast<std::chrono::microseconds>(end -
-                                                                      begin)
-                    .count()) +
-            u8" \xb5s");
+    DEBUG_PRINT_CONDITION(true, Debug::Server,
+                          "read_handler] IOA " + std::to_string(ioAddress) +
+                              " | IP " + std::string(ipAddrStr) + " | OA " +
+                              std::to_string(CS101_ASDU_getOA(asdu)) +
+                              " | CA " +
+                              std::to_string(CS101_ASDU_getCA(asdu)) +
+                              " | TOTAL " + TICTOC(begin, end));
   }
   return true;
 }
@@ -1209,7 +1218,14 @@ bool Server::asduHandler(void *parameter, IMasterConnection connection,
     begin = std::chrono::steady_clock::now();
   }
 
-  auto instance = static_cast<Server *>(parameter)->shared_from_this();
+  std::shared_ptr<Server> instance{};
+
+  try {
+    instance = static_cast<Server *>(parameter)->shared_from_this();
+  } catch (const std::bad_weak_ptr &e) {
+    DEBUG_PRINT(Debug::Server, "Reject asdu in shutdown");
+    return false;
+  }
 
   // message with more than one object is not allowed for command type ids
   if (auto message = instance->getValidMessage(connection, asdu)) {
@@ -1311,11 +1327,7 @@ bool Server::asduHandler(void *parameter, IMasterConnection connection,
             " | IP " + std::string(ipAddrStr) + " | OA " +
             std::to_string(CS101_ASDU_getOA(asdu)) + " | CA " +
             std::to_string(CS101_ASDU_getCA(asdu)) + " | TOTAL " +
-            std::to_string(
-                std::chrono::duration_cast<std::chrono::microseconds>(end -
-                                                                      begin)
-                    .count()) +
-            u8" \xb5s");
+            TICTOC(begin, end));
   }
   return true;
 }

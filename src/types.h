@@ -60,6 +60,13 @@
                                           : (void)0)
 #define DEBUG_TEST(mode) ::test(GLOBAL_DEBUG_MODE.load(), mode)
 
+#define MICRO_SEC_STR u8" \xc2\xb5s"
+#define DIFF_MS(begin, end)                                                    \
+  std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()
+#define DIFFNOW_MS(begin) DIFF_MS(begin, std::chrono::system_clock::now())
+#define TICTOC(begin, end) std::to_string(DIFF_MS(begin, end)) + MICRO_SEC_STR
+#define TICTOCNOW(begin) TICTOC(begin, std::chrono::system_clock::now())
+
 extern std::atomic<Debug> GLOBAL_DEBUG_MODE;
 
 void setDebug(Debug mode);
