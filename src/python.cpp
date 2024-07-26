@@ -1460,7 +1460,7 @@ PY_MODULE(c104, m) {
 )def",
            py::return_value_policy::copy)
       .def("interrogation", &Remote::Connection::interrogation, R"def(
-    interrogation(self: c104.Connection, common_address: int, cause: c104.Cot = c104.Cot.ACTIVATION, qualifier: c104.Qoi = c104.Qoi.Station, wait_for_response: bool = True) -> bool
+    interrogation(self: c104.Connection, common_address: int, cause: c104.Cot = c104.Cot.ACTIVATION, qualifier: c104.Qoi = c104.Qoi.STATION, wait_for_response: bool = True) -> bool
 
     send an interrogation command to the remote terminal unit (server)
 
@@ -1487,7 +1487,7 @@ PY_MODULE(c104, m) {
 
     Example
     -------
-    >>> if not my_connection.interrogation(common_address=47, cause=c104.Cot.ACTIVATION, qualifier=c104.Qoi.Station):
+    >>> if not my_connection.interrogation(common_address=47, cause=c104.Cot.ACTIVATION, qualifier=c104.Qoi.STATION):
     >>>     raise ValueError("Cannot send interrogation command")
 )def",
            "common_address"_a, "cause"_a = CS101_COT_ACTIVATION,
@@ -1495,7 +1495,7 @@ PY_MODULE(c104, m) {
            py::return_value_policy::copy)
       .def("counter_interrogation", &Remote::Connection::counterInterrogation,
            R"def(
-    counter_interrogation(self: c104.Connection, common_address: int, cause: c104.Cot = c104.Cot.ACTIVATION, qualifier: c104.Qoi = c104.Qoi.Station, wait_for_response: bool = True) -> bool
+    counter_interrogation(self: c104.Connection, common_address: int, cause: c104.Cot = c104.Cot.ACTIVATION, qualifier: c104.Qoi = c104.Qoi.STATION, wait_for_response: bool = True) -> bool
 
     send a counter interrogation command to the remote terminal unit (server)
 
@@ -1522,7 +1522,7 @@ PY_MODULE(c104, m) {
 
     Example
     -------
-    >>> if not my_connection.counter_interrogation(common_address=47, cause=c104.Cot.ACTIVATION, qualifier=c104.Qoi.Station):
+    >>> if not my_connection.counter_interrogation(common_address=47, cause=c104.Cot.ACTIVATION, qualifier=c104.Qoi.STATION):
     >>>     raise ValueError("Cannot send counter interrogation command")
 )def",
            "common_address"_a, "cause"_a = CS101_COT_ACTIVATION,
