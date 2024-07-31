@@ -1055,7 +1055,7 @@ PY_MODULE(c104, m) {
     station: :ref:`c104.Station`
         station reporting point
     io_address: int
-        point information object address (value between 1 and 16777215)
+        point information object address (value between 0 and 16777215)
     point_type: :ref:`c104.Type`
         point information type
 
@@ -1750,7 +1750,7 @@ PY_MODULE(c104, m) {
     Parameters
     ----------
     io_address: int
-        point information object address (value between 1 and 16777215)
+        point information object address (value between 0 and 16777215)
 
     Returns
     -------
@@ -1770,7 +1770,7 @@ PY_MODULE(c104, m) {
     Parameters
     ----------
     io_address: int
-        point information object address (value between 1 and 16777215)
+        point information object address (value between 0 and 16777215)
     type: :ref:`c104.Type`
         point information type
     report_ms: int
@@ -2112,7 +2112,7 @@ PY_MODULE(c104, m) {
           py::return_value_policy::copy)
       .def_property_readonly(
           "io_address", &Remote::Message::IncomingMessage::getIOA,
-          "int: information object address (1-16777215) (read-only)",
+          "int: information object address (0-16777215) (read-only)",
           py::return_value_policy::copy)
       .def_property_readonly(
           "connection_string",

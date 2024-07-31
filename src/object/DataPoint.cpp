@@ -57,7 +57,8 @@ DataPoint::DataPoint(const std::uint_fast32_t dp_ioa,
 
   is_server = dp_station && dp_station->isLocal();
 
-  if (dp_ioa < 1 || dp_ioa > 16777216) {
+  // unsigned is always >= 0
+  if (dp_ioa > 16777215) {
     throw std::invalid_argument("Invalid information object address " +
                                 std::to_string(dp_ioa));
   }
@@ -116,7 +117,7 @@ void DataPoint::setRelatedInformationObjectAddress(
     const std::uint_fast32_t related_io_address) {
   if (related_io_address > 0) {
 
-    if (related_io_address > 16777216) {
+    if (related_io_address > 16777215) {
       throw std::invalid_argument(
           "Invalid related information object address " +
           std::to_string(related_io_address));
