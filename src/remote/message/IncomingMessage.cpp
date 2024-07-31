@@ -245,7 +245,7 @@ void IncomingMessage::extractInformationObject() {
   value = 0;
   quality = Quality::Invalid;
 
-  if (positionValid && informationObjectAddress) {
+  if ((io != nullptr) && positionValid) {
     bool transient = false;
     // IEC 60870-5-104 standard uses only messages without timestamp or with
     // CP56Time2a timestamp

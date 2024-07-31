@@ -81,7 +81,7 @@ DataPointVector Station::getPoints() const {
 
 std::shared_ptr<DataPoint>
 Station::getPoint(const std::uint_fast32_t informationObjectAddress) {
-  if (0 == informationObjectAddress) {
+  if (16777215 < informationObjectAddress) {
     return {nullptr};
   }
 
