@@ -977,7 +977,7 @@ PY_MODULE(c104, m) {
     Parameters
     ----------
     common_address: int
-        common address (value between 0-65535)
+        common address (value between 1 and 65534)
 
     Returns
     -------
@@ -1021,7 +1021,7 @@ PY_MODULE(c104, m) {
     connection: :ref:`c104.Connection`
         connection reporting station
     common_address: int
-        station common address (value between 0-65535)
+        station common address (value between 1 and 65534)
 
     Returns
     -------
@@ -1055,7 +1055,7 @@ PY_MODULE(c104, m) {
     station: :ref:`c104.Station`
         station reporting point
     io_address: int
-        point information object address (value between 0 and 16777216)
+        point information object address (value between 1 and 16777215)
     point_type: :ref:`c104.Type`
         point information type
 
@@ -1179,7 +1179,7 @@ PY_MODULE(c104, m) {
     Parameters
     ----------
     common_address: int
-        station common address (value between 0 and 65535)
+        station common address (value between 1 and 65534)
 
     Returns
     -------
@@ -1199,7 +1199,7 @@ PY_MODULE(c104, m) {
     Parameters
     ----------
     common_address: int
-        station common address (value between 0 and 65535)
+        station common address (value between 1 and 65534)
 
     Returns
     -------
@@ -1467,7 +1467,7 @@ PY_MODULE(c104, m) {
     Parameters
     ----------
     common_address: int
-        station common address (value between 0 and 65535)
+        station common address (The valid range is 0 to 65535. Using the values 0 or 65535 sends the command to all stations, acting as a wildcard.)
     cause: :ref:`c104.Cot`
         cause of transmission
     qualifier: :ref:`c104.Qoi`
@@ -1502,7 +1502,7 @@ PY_MODULE(c104, m) {
     Parameters
     ----------
     common_address: int
-        station common address (value between 0 and 65535)
+        station common address (The valid range is 0 to 65535. Using the values 0 or 65535 sends the command to all stations, acting as a wildcard.)
     cause: :ref:`c104.Cot`
         cause of transmission
     qualifier: :ref:`c104.Qoi`
@@ -1537,7 +1537,7 @@ PY_MODULE(c104, m) {
     Parameters
     ----------
     common_address: int
-        station common address (value between 0 and 65535)
+        station common address (The valid range is 0 to 65535. Using the values 0 or 65535 sends the command to all stations, acting as a wildcard.)
     wait_for_response: bool
         block call until command success or failure reponse received?
 
@@ -1562,7 +1562,7 @@ PY_MODULE(c104, m) {
     Parameters
     ----------
     common_address: int
-        station common address (value between 0 and 65535)
+        station common address (The valid range is 0 to 65535. Using the values 0 or 65535 sends the command to all stations, acting as a wildcard.)
     with_time: bool
         send with or without timestamp
     wait_for_response: bool
@@ -1588,7 +1588,7 @@ PY_MODULE(c104, m) {
     Parameters
     ----------
     common_address: int
-        station common address (value between 0 and 65535)
+        station common address (value between 1 and 65534)
 
     Returns
     -------
@@ -1608,7 +1608,7 @@ PY_MODULE(c104, m) {
     Parameters
     ----------
     common_address: int
-        station common address (value between 0 and 65535)
+        station common address (value between 1 and 65534)
 
     Returns
     -------
@@ -1728,7 +1728,7 @@ PY_MODULE(c104, m) {
                              "Connection of non-local station (read-only)")
       .def_property_readonly(
           "common_address", &Object::Station::getCommonAddress,
-          "int: common address of this station (0-65535) (read-only)",
+          "int: common address of this station (1-65534) (read-only)",
           py::return_value_policy::copy)
       .def_property_readonly("is_local", &Object::Station::isLocal,
                              "bool: test if station is local (has sever) or "
@@ -1750,7 +1750,7 @@ PY_MODULE(c104, m) {
     Parameters
     ----------
     io_address: int
-        point information object address (value between 0 and 16777216)
+        point information object address (value between 1 and 16777215)
 
     Returns
     -------
@@ -1770,7 +1770,7 @@ PY_MODULE(c104, m) {
     Parameters
     ----------
     io_address: int
-        point information object address (value between 0 and 16777216)
+        point information object address (value between 1 and 16777215)
     type: :ref:`c104.Type`
         point information type
     report_ms: int
@@ -2103,17 +2103,17 @@ PY_MODULE(c104, m) {
                              py::return_value_policy::copy)
       .def_property_readonly(
           "common_address", &Remote::Message::IncomingMessage::getCommonAddress,
-          "int: common address (0-65535) (read-only)",
+          "int: common address (1-65534) (read-only)",
           py::return_value_policy::copy)
       .def_property_readonly(
           "originator_address",
           &Remote::Message::IncomingMessage::getOriginatorAddress,
           "int: originator address (0-255) (read-only)",
           py::return_value_policy::copy)
-      .def_property_readonly("io_address",
-                             &Remote::Message::IncomingMessage::getIOA,
-                             "int: information object address (read-only)",
-                             py::return_value_policy::copy)
+      .def_property_readonly(
+          "io_address", &Remote::Message::IncomingMessage::getIOA,
+          "int: information object address (1-16777215) (read-only)",
+          py::return_value_policy::copy)
       .def_property_readonly(
           "connection_string",
           &Remote::Message::IncomingMessage::getConnectionString,
