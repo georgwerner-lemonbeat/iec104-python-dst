@@ -66,6 +66,8 @@
 #define DIFFNOW_MS(begin) DIFF_MS(begin, std::chrono::system_clock::now())
 #define TICTOC(begin, end) std::to_string(DIFF_MS(begin, end)) + MICRO_SEC_STR
 #define TICTOCNOW(begin) TICTOC(begin, std::chrono::system_clock::now())
+#define MAX_INFORMATION_OBJECT_ADDRESS 16777215
+#define UNDEFINED_INFORMATION_OBJECT_ADDRESS 16777216
 
 extern std::atomic<Debug> GLOBAL_DEBUG_MODE;
 

@@ -1763,7 +1763,7 @@ PY_MODULE(c104, m) {
 )def",
            "io_address"_a)
       .def("add_point", &Object::Station::addPoint, R"def(
-    add_point(self: c104.Station, io_address: int, type: c104.Type, report_ms: int = 0, related_io_address: int = 0, related_io_autoreturn: bool = False, command_mode: c104.CommandMode = c104.CommandMode.DIRECT) -> Optional[c104.Point]
+    add_point(self: c104.Station, io_address: int, type: c104.Type, report_ms: int = 0, related_io_address: Optional[int] = None, related_io_autoreturn: bool = False, command_mode: c104.CommandMode = c104.CommandMode.DIRECT) -> Optional[c104.Point]
 
     add a new point to this station and return the new point object
 
@@ -1775,7 +1775,7 @@ PY_MODULE(c104, m) {
         point information type
     report_ms: int
         automatic reporting interval in milliseconds (monitoring points server-sided only)
-    related_io_address: int
+    related_io_address: Optional[int]
         related monitoring point identified by information object address, that should be auto transmitted on incoming client command (for control points server-sided only)
     related_io_autoreturn: bool
         automatic reporting interval in milliseconds (for control points server-sided only)
@@ -1805,7 +1805,8 @@ PY_MODULE(c104, m) {
     >>> point_3 = sv_station_1.add_point(io_address=12, type=c104.Type.C_SE_NC_1, report_ms=0, related_io_address=point_2.io_address, related_io_autoreturn=True, command_mode=c104.CommandMode.SELECT_AND_EXECUTE)
 )def",
            "io_address"_a, "type"_a, "report_ms"_a = 0,
-           "related_io_address"_a = 0, "related_io_autoreturn"_a = false,
+           "related_io_address"_a = std::nullopt,
+           "related_io_autoreturn"_a = false,
            "command_mode"_a = DIRECT_COMMAND);
 
   py::class_<Object::DataPoint, std::shared_ptr<Object::DataPoint>>(
@@ -1826,11 +1827,12 @@ PY_MODULE(c104, m) {
                     &Object::DataPoint::setQuality,
                     ":ref:`c104.Quality`: Quality bitset object",
                     py::return_value_policy::copy)
-      .def_property("related_io_address",
-                    &Object::DataPoint::getRelatedInformationObjectAddress,
-                    &Object::DataPoint::setRelatedInformationObjectAddress,
-                    "int: io_address of a related monitoring point",
-                    py::return_value_policy::copy)
+      .def_property(
+          "related_io_address",
+          &Object::DataPoint::getRelatedInformationObjectAddress,
+          &Object::DataPoint::setRelatedInformationObjectAddress,
+          "Optional[int]: io_address of a related monitoring point or None",
+          py::return_value_policy::copy)
       .def_property(
           "related_io_autoreturn",
           &Object::DataPoint::getRelatedInformationObjectAutoReturn,

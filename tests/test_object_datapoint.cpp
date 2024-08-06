@@ -31,10 +31,10 @@
 
 TEST_CASE("Create point", "[object::point]") {
   auto point = Object::DataPoint::create(11, IEC60870_5_TypeID::M_SP_NA_1,
-                                         nullptr, 0, 0, false);
+                                         nullptr, 0, std::nullopt, false);
   REQUIRE(point->getStation().get() == nullptr);
   REQUIRE(point->getInformationObjectAddress() == 11);
-  REQUIRE(point->getRelatedInformationObjectAddress() == 0);
+  REQUIRE(point->getRelatedInformationObjectAddress() == std::nullopt);
   REQUIRE(point->getRelatedInformationObjectAutoReturn() == false);
   REQUIRE(point->getType() == IEC60870_5_TypeID::M_SP_NA_1);
   REQUIRE(point->getReportInterval_ms() == 0);
@@ -51,7 +51,7 @@ TEST_CASE("Create point", "[object::point]") {
 
 TEST_CASE("Set point value", "[object::point]") {
   auto point = Object::DataPoint::create(11, IEC60870_5_TypeID::M_SP_NA_1,
-                                         nullptr, 0, 0, false);
+                                         nullptr, 0, std::nullopt, false);
 
   point->setValueEx(56.78, Quality::None, 1234567890);
   REQUIRE(point->getValue() == 56.78);
@@ -65,7 +65,7 @@ TEST_CASE("Set point value", "[object::point]") {
 
 TEST_CASE("Set point value via message", "[object::point]") {
   auto point = Object::DataPoint::create(11, IEC60870_5_TypeID::C_DC_TA_1,
-                                         nullptr, 0, 0, false);
+                                         nullptr, 0, std::nullopt, false);
 
   sCS101_AppLayerParameters appLayerParameters{.sizeOfTypeId = 1,
                                                .sizeOfVSQ = 0,

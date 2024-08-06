@@ -126,7 +126,8 @@ public:
   std::shared_ptr<DataPoint>
   addPoint(std::uint_fast32_t informationObjectAddress, IEC60870_5_TypeID type,
            std::uint_fast32_t reportInterval_ms = 0,
-           std::uint_fast32_t relatedInformationObjectAddress = 0,
+           std::optional<std::uint_fast32_t> relatedInformationObjectAddress =
+               std::nullopt,
            bool relatedInformationObjectAutoReturn = false,
            CommandTransmissionMode commandMode = DIRECT_COMMAND);
 

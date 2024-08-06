@@ -1265,8 +1265,11 @@ bool Server::asduHandler(void *parameter, IMasterConnection connection,
                 }
                 // only in case of auto return
                 if (point->getRelatedInformationObjectAutoReturn()) {
-                  related_point = station->getPoint(
-                      point->getRelatedInformationObjectAddress());
+                  const auto related_ioa =
+                      point->getRelatedInformationObjectAddress();
+                  if (related_ioa.has_value()) {
+                    related_point = station->getPoint(related_ioa.value());
+                  }
                 }
               }
 

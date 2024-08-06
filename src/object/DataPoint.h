@@ -59,7 +59,7 @@ public:
   create(std::uint_fast32_t dp_ioa, IEC60870_5_TypeID dp_type,
          std::shared_ptr<Station> dp_station,
          std::uint_fast32_t dp_report_ms = 0,
-         std::uint_fast32_t dp_related_ioa = 0,
+         std::optional<std::uint_fast32_t> dp_related_ioa = std::nullopt,
          bool dp_related_auto_return = false,
          CommandTransmissionMode dp_cmd_mode = DIRECT_COMMAND) {
     Module::ScopedGilAcquire scoped("DataPoint.create");
@@ -89,7 +89,8 @@ private:
    */
   DataPoint(std::uint_fast32_t dp_ioa, IEC60870_5_TypeID dp_type,
             std::shared_ptr<Station> dp_station,
-            std::uint_fast32_t dp_report_ms, std::uint_fast32_t dp_related_ioa,
+            std::uint_fast32_t dp_report_ms,
+            std::optional<std::uint_fast32_t> dp_related_ioa,
             bool dp_related_auto_return, CommandTransmissionMode dp_cmd_mode);
 
   bool is_server{false};
@@ -98,7 +99,8 @@ private:
   std::uint_fast32_t informationObjectAddress{0};
 
   /// @brief IEC60870-5 remote address of a related measurement DataPoint
-  std::atomic_uint_fast32_t relatedInformationObjectAddress{0};
+  std::atomic_uint_fast32_t relatedInformationObjectAddress{
+      UNDEFINED_INFORMATION_OBJECT_ADDRESS};
 
   /// @brief configure if related point should be auto transmitted if this point
   /// is a command point that was updated via client
@@ -169,15 +171,15 @@ public:
    * @brief Get the information object address of a related monitoring point
    * @return IOA
    */
-  std::uint_fast32_t getRelatedInformationObjectAddress() const;
+  std::optional<std::uint_fast32_t> getRelatedInformationObjectAddress() const;
 
   /**
    * @brief Set the information object address of a related monitoring point
    * @throws std::invalid_argument if not a server-sided control point or
    * invalid IOA
    */
-  void
-  setRelatedInformationObjectAddress(std::uint_fast32_t related_io_address);
+  void setRelatedInformationObjectAddress(
+      std::optional<std::uint_fast32_t> related_io_address);
 
   /**
    * @brief Test if a related monitoring point should be auto-transmitted on

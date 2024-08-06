@@ -42,12 +42,11 @@ DataPoint::DataPoint(const std::uint_fast32_t dp_ioa,
                      const IEC60870_5_TypeID dp_type,
                      std::shared_ptr<Station> dp_station,
                      const std::uint_fast32_t dp_report_ms,
-                     const std::uint_fast32_t dp_related_ioa,
+                     const std::optional<std::uint_fast32_t> dp_related_ioa,
                      const bool dp_related_auto_return,
                      const CommandTransmissionMode dp_cmd_mode)
     : informationObjectAddress(dp_ioa), type(dp_type), station(dp_station),
       reportInterval_ms(dp_report_ms),
-      relatedInformationObjectAddress(dp_related_ioa),
       relatedInformationObjectAutoReturn(dp_related_auto_return),
       commandMode(dp_cmd_mode) {
   if (type >= M_EI_NA_1) {
@@ -58,7 +57,7 @@ DataPoint::DataPoint(const std::uint_fast32_t dp_ioa,
   is_server = dp_station && dp_station->isLocal();
 
   // unsigned is always >= 0
-  if (dp_ioa > 16777215) {
+  if (MAX_INFORMATION_OBJECT_ADDRESS < dp_ioa) {
     throw std::invalid_argument("Invalid information object address " +
                                 std::to_string(dp_ioa));
   }
@@ -75,14 +74,20 @@ DataPoint::DataPoint(const std::uint_fast32_t dp_ioa,
     }
   }
 
-  if (relatedInformationObjectAddress > 0) {
+  if (dp_related_ioa.has_value()) {
+    if (MAX_INFORMATION_OBJECT_ADDRESS < dp_related_ioa) {
+      throw std::invalid_argument(
+          "Invalid related information object address " +
+          std::to_string(dp_related_ioa.value()));
+    }
+    relatedInformationObjectAddress = dp_related_ioa.value();
     if (!is_server) {
       throw std::invalid_argument(
           "Related IO address option is only allowed for server-sided points");
     }
   }
   if (relatedInformationObjectAutoReturn) {
-    if (relatedInformationObjectAddress < 1) {
+    if (MAX_INFORMATION_OBJECT_ADDRESS < relatedInformationObjectAddress) {
       throw std::invalid_argument("Related IO auto return option cannot be "
                                   "used without the related IO address option");
     }
@@ -109,26 +114,32 @@ std::uint_fast32_t DataPoint::getInformationObjectAddress() const {
   return informationObjectAddress;
 }
 
-std::uint_fast32_t DataPoint::getRelatedInformationObjectAddress() const {
-  return relatedInformationObjectAddress.load();
+std::optional<std::uint_fast32_t>
+DataPoint::getRelatedInformationObjectAddress() const {
+  std::uint_fast32_t ioa = relatedInformationObjectAddress.load();
+  if (MAX_INFORMATION_OBJECT_ADDRESS < ioa) {
+    return std::nullopt;
+  }
+  return ioa;
 }
 
 void DataPoint::setRelatedInformationObjectAddress(
-    const std::uint_fast32_t related_io_address) {
-  if (related_io_address > 0) {
-
-    if (related_io_address > 16777215) {
+    const std::optional<std::uint_fast32_t> related_io_address) {
+  if (related_io_address.has_value()) {
+    if (MAX_INFORMATION_OBJECT_ADDRESS < related_io_address) {
       throw std::invalid_argument(
           "Invalid related information object address " +
-          std::to_string(related_io_address));
+          std::to_string(related_io_address.value()));
     }
 
     if (!is_server) {
       throw std::invalid_argument(
           "Related IO address option is only allowed for server-sided points");
     }
+    relatedInformationObjectAddress.store(related_io_address.value());
+  } else {
+    relatedInformationObjectAddress.store(UNDEFINED_INFORMATION_OBJECT_ADDRESS);
   }
-  relatedInformationObjectAddress.store(related_io_address);
 }
 
 bool DataPoint::getRelatedInformationObjectAutoReturn() const {
@@ -137,7 +148,8 @@ bool DataPoint::getRelatedInformationObjectAutoReturn() const {
 
 void DataPoint::setRelatedInformationObjectAutoReturn(const bool auto_return) {
   if (auto_return) {
-    if (relatedInformationObjectAddress.load() < 1) {
+    if (MAX_INFORMATION_OBJECT_ADDRESS <
+        relatedInformationObjectAddress.load()) {
       throw std::invalid_argument("Related IO auto return option cannot be "
                                   "used without the related IO address option");
     }

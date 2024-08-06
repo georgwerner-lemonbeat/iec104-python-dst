@@ -81,7 +81,7 @@ DataPointVector Station::getPoints() const {
 
 std::shared_ptr<DataPoint>
 Station::getPoint(const std::uint_fast32_t informationObjectAddress) {
-  if (16777215 < informationObjectAddress) {
+  if (MAX_INFORMATION_OBJECT_ADDRESS < informationObjectAddress) {
     return {nullptr};
   }
 
@@ -94,13 +94,12 @@ Station::getPoint(const std::uint_fast32_t informationObjectAddress) {
   return {nullptr};
 }
 
-std::shared_ptr<DataPoint>
-Station::addPoint(const std::uint_fast32_t informationObjectAddress,
-                  const IEC60870_5_TypeID type,
-                  const std::uint_fast32_t reportInterval_ms,
-                  const std::uint_fast32_t relatedInformationObjectAddress,
-                  const bool relatedInformationObjectAutoReturn,
-                  const CommandTransmissionMode commandMode) {
+std::shared_ptr<DataPoint> Station::addPoint(
+    const std::uint_fast32_t informationObjectAddress,
+    const IEC60870_5_TypeID type, const std::uint_fast32_t reportInterval_ms,
+    const std::optional<std::uint_fast32_t> relatedInformationObjectAddress,
+    const bool relatedInformationObjectAutoReturn,
+    const CommandTransmissionMode commandMode) {
   if (getPoint(informationObjectAddress)) {
     return {nullptr};
   }
