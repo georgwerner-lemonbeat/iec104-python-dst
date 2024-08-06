@@ -47,7 +47,7 @@ Connection::Connection(
     const ConnectionInit _init,
     std::shared_ptr<Remote::TransportSecurity> transport_security,
     const uint_fast8_t originator_address)
-    : client(_client), ip(_ip), port(_port),
+    : client(_client), ip(_ip), port(_port), init(_init),
       commandTimeout_ms(command_timeout_ms) {
   Assert_IPv4(_ip);
   Assert_Port(_port);
@@ -77,7 +77,6 @@ Connection::Connection(
   // connection
   CS104_Connection_setAPCIParameters(connection, param);
 
-  init.store(_init);
   if (originator_address > 0) {
     setOriginatorAddress(originator_address);
   }
@@ -169,30 +168,36 @@ void Connection::connect(const bool autoConnect) {
 }
 
 void Connection::disconnect() {
-  // free connection thread
-  std::lock_guard<Module::GilAwareMutex> const lock(connection_mutex);
-  CS104_Connection_close(connection);
-
-  if (isOpen()) {
-    setState(OPEN_AWAIT_CLOSED);
-
-    // print
-    DEBUG_PRINT(Debug::Connection,
-                "disconnect] Disconnect from " + getConnectionString());
-
-    // Thread_sleep(1000);
-  } else {
-    setState(CLOSED);
+  ConnectionState const current = state.load();
+  if (CLOSED == current) {
+    return;
   }
+
+  if (CLOSED_AWAIT_RECONNECT == current) {
+    setState(CLOSED);
+  } else {
+    setState(OPEN_AWAIT_CLOSED);
+  }
+
+  // free connection thread
+  std::unique_lock<Module::GilAwareMutex> lock(connection_mutex);
+  CS104_Connection_close(connection);
+  lock.unlock();
+
+  // print
+  DEBUG_PRINT(Debug::Connection,
+              "disconnect] Disconnect from " + getConnectionString());
 }
 
 bool Connection::isOpen() const {
   ConnectionState const current = state.load();
-  return OPEN_MUTED == current || OPEN_AWAIT_INTERROGATION == current ||
-         OPEN_AWAIT_CLOCK_SYNC == current || OPEN == current;
+  return current != CLOSED && current != CLOSED_AWAIT_OPEN &&
+         current != CLOSED_AWAIT_RECONNECT;
 }
 
-bool Connection::isMuted() const { return state == OPEN_MUTED; }
+bool Connection::isMuted() const {
+  return state == OPEN_MUTED || state == OPEN_AWAIT_UNMUTE;
+}
 
 bool Connection::mute() {
   Module::ScopedGilRelease const scoped("Connection.mute");
@@ -252,30 +257,27 @@ bool Connection::setMuted(bool value) {
 }
 
 bool Connection::setOpen() {
-  DEBUG_PRINT(Debug::Connection, "set_open] " + getConnectionString());
   // DO NOT LOCK connection_mutex: connect locks
-  ConnectionState const current = state.load();
 
-  if (current == OPEN || current == OPEN_MUTED ||
-      current == OPEN_AWAIT_CLOSED) {
+  if (CLOSED_AWAIT_OPEN != state.load()) {
     // print
-    DEBUG_PRINT(Debug::Connection,
-                "set_open] Already opened to " + getConnectionString());
+    DEBUG_PRINT(Debug::Connection, "set_open] Connection state invalid to " +
+                                       getConnectionString() + " | State " +
+                                       ConnectionState_toString(state.load()));
     return false;
-  } else {
-    // print
-    DEBUG_PRINT(Debug::Connection,
-                "set_open] Opening connection to " + getConnectionString());
   }
 
-  setState(OPEN_MUTED);
+  if (INIT_MUTED == init) {
+    setState(OPEN_MUTED);
+  } else {
+    setState(OPEN_AWAIT_UNMUTE);
+  }
   connectionCount++;
   connectedAt_ms.store(GetTimestamp_ms());
 
   DEBUG_PRINT(Debug::Connection,
-              "set_open] Unmuting connection to " + getConnectionString());
-  unmute();
-  DEBUG_PRINT(Debug::Connection, "set_open] DONE " + getConnectionString());
+              "set_open] Opened connection to " + getConnectionString());
+
   return true;
 }
 
@@ -289,10 +291,6 @@ bool Connection::setClosed() {
                                        getConnectionString() + " | State " +
                                        ConnectionState_toString(current));
     return false;
-  } else {
-    // print
-    DEBUG_PRINT(Debug::Connection,
-                "set_closed] Connection closed to " + getConnectionString());
   }
 
   if (CLOSED_AWAIT_OPEN != current && CLOSED_AWAIT_RECONNECT != current) {
@@ -302,6 +300,9 @@ bool Connection::setClosed() {
 
   // controlled close or connection lost?
   setState((OPEN_AWAIT_CLOSED == current) ? CLOSED : CLOSED_AWAIT_RECONNECT);
+
+  DEBUG_PRINT(Debug::Connection,
+              "set_closed] Connection closed to " + getConnectionString());
   return true;
 }
 

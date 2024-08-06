@@ -284,6 +284,15 @@ void Client::thread_run() {
           active++;
         }
         break;
+      case OPEN_AWAIT_UNMUTE:
+        count++;
+        try {
+          c->unmute();
+        } catch (const std::exception &e) {
+          std::cerr << "[c104.Client.loop] Failed to unmute connection: "
+                    << e.what() << std::endl;
+        }
+        break;
       case OPEN_AWAIT_INTERROGATION:
         count++;
         try {

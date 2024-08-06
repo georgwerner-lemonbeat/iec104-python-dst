@@ -124,14 +124,16 @@ std::string ConnectionState_toString(const ConnectionState state) {
     return "CLOSED_AWAIT_OPEN";
   case CLOSED_AWAIT_RECONNECT:
     return "CLOSED_AWAIT_RECONNECT";
-  case OPEN_MUTED:
-    return "OPEN_MUTED";
+  case OPEN_AWAIT_UNMUTE:
+    return "OPEN_AWAIT_UNMUTE";
   case OPEN_AWAIT_INTERROGATION:
     return "OPEN_AWAIT_INTERROGATION";
   case OPEN_AWAIT_CLOCK_SYNC:
     return "OPEN_AWAIT_CLOCK_SYNC";
   case OPEN:
     return "OPEN";
+  case OPEN_MUTED:
+    return "OPEN_MUTED";
   case OPEN_AWAIT_CLOSED:
     return "OPEN_AWAIT_CLOSED";
   default:

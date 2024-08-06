@@ -268,23 +268,46 @@ PY_MODULE(c104, m) {
       .value("UNIMPLEMENTED_GROUP", UNIMPLEMENTED_GROUP);
 
   py::enum_<ConnectionInit>(
-      m, "Init", "This enum contains all connection init command options.")
-      .value("ALL", INIT_ALL)
-      .value("INTERROGATION", INIT_INTERROGATION)
-      .value("CLOCK_SYNC", INIT_CLOCK_SYNC)
-      .value("NONE", INIT_NONE);
+      m, "Init",
+      "This enum contains all connection init command options. Everytime the "
+      "connection is established the client will behave as follows:")
+      .value("ALL", INIT_ALL,
+             "Unmute the connection, send an interrogation command and after "
+             "that send a clock synchronization command")
+      .value("INTERROGATION", INIT_INTERROGATION,
+             "Unmute the connection and send an interrogation command")
+      .value("CLOCK_SYNC", INIT_CLOCK_SYNC,
+             "Unmute the connection and send a clock synchronization command")
+      .value("NONE", INIT_NONE,
+             "Unmute the connection, but without triggering a command")
+      .value("MUTED", INIT_MUTED,
+             "Act as a redundancy client without active communication");
 
   py::enum_<ConnectionState>(m, "ConnectionState",
                              "This enum contains all link states for "
                              "connection state machine behaviour.")
-      .value("CLOSED", CLOSED)
-      .value("CLOSED_AWAIT_OPEN", CLOSED_AWAIT_OPEN)
-      .value("CLOSED_AWAIT_RECONNECT", CLOSED_AWAIT_RECONNECT)
-      .value("OPEN_MUTED", OPEN_MUTED)
-      .value("OPEN_AWAIT_INTERROGATION", OPEN_AWAIT_INTERROGATION)
-      .value("OPEN_AWAIT_CLOCK_SYNC", OPEN_AWAIT_CLOCK_SYNC)
-      .value("OPEN", OPEN)
-      .value("OPEN_AWAIT_CLOSED", OPEN_AWAIT_CLOSED);
+      .value("CLOSED", CLOSED, "The connection is closed")
+      .value("CLOSED_AWAIT_OPEN", CLOSED_AWAIT_OPEN,
+             "The connection is dialing")
+      .value("CLOSED_AWAIT_RECONNECT", CLOSED_AWAIT_RECONNECT,
+             "The connection will retry dialing soon")
+      .value("OPEN_AWAIT_UNMUTE", OPEN_AWAIT_UNMUTE,
+             "The connection is established and will be activated/unmuted as "
+             "part of the init routine soon")
+      .value("OPEN_AWAIT_INTERROGATION", OPEN_AWAIT_INTERROGATION,
+             "The connection is established and active/unmuted an will send a "
+             "interrogation command as part of the init routine soon")
+      .value("OPEN_AWAIT_CLOCK_SYNC", OPEN_AWAIT_CLOCK_SYNC,
+             "The connection is established and active/unmuted an will send a "
+             "clock synchronization command as part of the init routine soon")
+      .value("OPEN", OPEN,
+             "The connection is established and active/unmuted, with no init "
+             "commands outstanding")
+      .value("OPEN_MUTED", OPEN_MUTED,
+             "The connection is established and inactive/muted, with no init "
+             "commands outstanding")
+      .value("OPEN_AWAIT_CLOSED", OPEN_AWAIT_CLOSED,
+             "The connection is about to close soon");
 
   py::enum_<CommandResponseState>(
       m, "ResponseState",
@@ -299,8 +322,13 @@ PY_MODULE(c104, m) {
       m, "CommandMode",
       "This enum contains all command transmission modes a client"
       "may use to send commands.")
-      .value("DIRECT", DIRECT_COMMAND)
-      .value("SELECT_AND_EXECUTE", SELECT_AND_EXECUTE_COMMAND);
+      .value("DIRECT", DIRECT_COMMAND,
+             "The value can be set without any selection procedure")
+      .value("SELECT_AND_EXECUTE", SELECT_AND_EXECUTE_COMMAND,
+             "The client has to send a select command first to get exclusive "
+             "access to the points value and can then send an updated value "
+             "command. The selection automatically ends by receiving the value "
+             "command.");
 
   py::enum_<CS101_QualifierOfInterrogation>(
       m, "Qoi",

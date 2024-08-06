@@ -168,12 +168,6 @@ public:
   bool setMuted(bool value);
 
   /**
-   * @brief Getter for internal connection object
-   * @return CS104_Connection refrence
-   */
-  CS104_Connection getCS104();
-
-  /**
    * @brief Setter for open state: Mark connection as open
    */
   bool setOpen();
@@ -421,7 +415,7 @@ private:
   std::uint_fast16_t port = 0;
 
   /// @brief connection initialization commands
-  std::atomic<ConnectionInit> init{INIT_ALL};
+  ConnectionInit init = INIT_ALL;
 
   /// @brief originator address of outgoing messages
   std::atomic_uint_fast8_t originatorAddress{0};
