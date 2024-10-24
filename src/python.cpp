@@ -1734,6 +1734,10 @@ PY_MODULE(c104, m) {
       m, "Station",
       "This class represents local or remote stations and provides access to "
       "meta information and containing points")
+       .def_property("is_DST",
+                      &Object::Station::getIsDST,  // Getter
+                      &Object::Station::setIsDST,  // Setter
+                      "bool: toggle daylight saving time on or off")
       .def_property_readonly("server", &Object::Station::getServer,
                              "typing.Optional[c104.Server]: parent Server of "
                              "local station (read-only)")
@@ -1830,8 +1834,9 @@ PY_MODULE(c104, m) {
       .def_property_readonly("io_address",
                              &Object::DataPoint::getInformationObjectAddress,
                              "int: information object address (read-only)")
-      .def_property_readonly("type", &Object::DataPoint::getType,
-                             "c104.Type: iec60870 data Type (read-only)")
+      .def_property("type", &Object::DataPoint::getType,
+                            &Object::DataPoint::setType,
+                             "c104.Type: iec60870 data Type")
       .def_property("related_io_address",
                     &Object::DataPoint::getRelatedInformationObjectAddress,
                     &Object::DataPoint::setRelatedInformationObjectAddress,
