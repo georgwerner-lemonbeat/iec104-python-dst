@@ -1834,9 +1834,6 @@ PY_MODULE(c104, m) {
       .def_property_readonly("io_address",
                              &Object::DataPoint::getInformationObjectAddress,
                              "int: information object address (read-only)")
-      .def_property("type", &Object::DataPoint::getType,
-                            &Object::DataPoint::setType,
-                             "c104.Type: iec60870 data Type")
       .def_property("related_io_address",
                     &Object::DataPoint::getRelatedInformationObjectAddress,
                     &Object::DataPoint::setRelatedInformationObjectAddress,
