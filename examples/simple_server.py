@@ -5,7 +5,7 @@ import time
 
 def on_step_command(point: c104.Point, previous_info: c104.Information, message: c104.IncomingMessage) -> c104.ResponseState:
     """ handle incoming regulating step command
-    """
+    """   
     print("{0} STEP COMMAND on IOA: {1}, message: {2}, previous: {3}, current: {4}".format(point.type, point.io_address, message, previous_info, point.info))
 
     if point.value == c104.Step.LOWER:
@@ -42,12 +42,10 @@ def main():
 
 
     # monitoring point preparation
-   # point = station.add_point(io_address=11, type=c104.Type.M_ME_TF_1, report_ms=1000)
-   # point.on_before_auto_transmit(callable=before_auto_transmit)
-   # point.on_before_read(callable=before_read)
+    point = station.add_point(io_address=11, type=c104.Type.M_ME_TF_1, report_ms=1000)
+    point.on_before_auto_transmit(callable=before_auto_transmit)
+    point.on_before_read(callable=before_read)
    
-   # point.type = c104.Type.M_ME_NC_1
-
     point2 = station.add_point(io_address=13, type=c104.Type.M_SP_TB_1, report_ms=5000)
 
     # command point preparation

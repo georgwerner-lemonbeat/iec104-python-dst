@@ -57,23 +57,17 @@ PointMessage::PointMessage(std::shared_ptr<Object::DataPoint> point)
     from_time_point(&time, i->getRecordedAt().value_or(i->getProcessedAt()));
     
     std::shared_ptr<Object::Station> station = point->getStation();
-
-
-    //time.encodedValue[3] |= 0x80; //dst set
-    
     if (station) {
       bool isDST = station->getIsDST();
       if (isDST) {
-        time.encodedValue[3] |= 0x80; //dst set
+        CP56Time2a_setSummerTime(&time, isDST);
       }
       else {
-        time.encodedValue[3] &= 0x7f; //unset dst
+        CP56Time2a_setSummerTime(&time, isDST);
         // The DataPoint's owning Station no longer exists
         std::cout << "No valid Station associated with this DataPoint." << std::endl;
       }
     }
-     
-
     io = (InformationObject)SinglePointWithCP56Time2a_create(
         nullptr, informationObjectAddress, i->isOn(),
         static_cast<uint8_t>(std::get<Quality>(i->getQuality())), &time);
