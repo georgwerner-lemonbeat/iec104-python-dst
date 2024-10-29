@@ -216,6 +216,7 @@ public:
 
   IEC60870_5_TypeID getType() const;
 
+
   /**
    * @brief Get automatic report transmission interval of this point
    * @return interval in milliseconds, 0 if disabled

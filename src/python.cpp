@@ -1933,6 +1933,10 @@ Example
       m, "Station",
       "This class represents local or remote stations and provides access to "
       "meta information and containing points")
+       .def_property("is_DST",
+                      &Object::Station::getIsDST,  // Getter
+                      &Object::Station::setIsDST,  // Setter
+                      "bool: toggle daylight saving time on or off")
       .def_property_readonly("server", &Object::Station::getServer,
                              "c104.Server | None : parent Server of "
                              "local station (read-only)")
