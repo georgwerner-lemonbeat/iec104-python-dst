@@ -1831,12 +1831,12 @@ PY_MODULE(c104, m) {
       .def_property_readonly(
           "station", &Object::DataPoint::getStation,
           "typing.Optional[c104.Station]: parent Station object (read-only)")
-      .def_property_readonly("type", &Object::DataPoint::getType,
-                             "c104.Type : data related IEC60870 message type "
-                             "identifier (read-only)")
       .def_property_readonly("io_address",
                              &Object::DataPoint::getInformationObjectAddress,
                              "int: information object address (read-only)")
+      .def_property_readonly("type", &Object::DataPoint::getType,
+                             "c104.Type : data related IEC60870 message type "
+                             "identifier (read-only)")
       .def_property("related_io_address",
                     &Object::DataPoint::getRelatedInformationObjectAddress,
                     &Object::DataPoint::setRelatedInformationObjectAddress,
