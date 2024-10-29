@@ -64,9 +64,11 @@ PointMessage::PointMessage(std::shared_ptr<Object::DataPoint> point)
       }
       else {
         CP56Time2a_setSummerTime(&time, isDST);
-        // The DataPoint's owning Station no longer exists
-        std::cout << "No valid Station associated with this DataPoint." << std::endl;
       }
+    }
+    else {
+      // The DataPoint's owning Station no longer exists
+      std::cout << "No valid Station associated with this DataPoint." << std::endl;
     }
     io = (InformationObject)SinglePointWithCP56Time2a_create(
         nullptr, informationObjectAddress, i->isOn(),
